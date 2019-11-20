@@ -1,0 +1,72 @@
+version: '2'
+
+volumes:
+  orderer.corp-accom-net.com:
+  peer0.esamerica.corp-accom-net.com:
+  peer0.abbott.corp-accom-net.com:
+
+
+networks:
+  byfn:
+
+services:
+
+  orderer.corp-accom-net.com:
+    extends:
+      file:   base/docker-compose-base.yaml
+      service: orderer.corp-accom-net.com
+    container_name: orderer.corp-accom-net.com
+    networks:
+      - byfn
+
+  peer0.esamerica.corp-accom-net.com:
+    container_name: peer0.esamerica.corp-accom-net.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.esamerica.corp-accom-net.com
+    networks:
+      - byfn
+
+
+  peer0.abbott.corp-accom-net.com:
+    container_name: peer0.abbott.corp-accom-net.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.abbott.corp-accom-net.com
+    networks:
+      - byfn
+
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      #- CORE_LOGGING_LEVEL=DEBUG
+      - CORE_LOGGING_LEVEL=INFO
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.esamerica.corp-accom-net.com:7051
+      - CORE_PEER_LOCALMSPID=EsamericaMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/fabric-samples/CorpAccomNet/crypto-config/peerOrganizations/esamerica.corp-accom-net.com/peers/peer0.esamerica.corp-accom-net.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/fabric-samples/CorpAccomNet/crypto-config/peerOrganizations/esamerica.corp-accom-net.com/peers/peer0.esamerica.corp-accom-net.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/fabric-samples/CorpAccomNet/crypto-config/peerOrganizations/abbott.corp-accom-net.com/peers/peer0.abbott.corp-accom-net.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/fabric-samples/CorpAccomNet/crypto-config/peerOrganizations/abbott.corp-accom-net.com/users/Admin@abbott.corp-accom-net.com/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./../chaincode/:/opt/gopath/src/chain
+      - ./crypto-config:/opt/gopath/fabric-samples/CorpAccomNet/crypto-config/
+      - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+      - ./channel-artifacts:/opt/gopath/fabric-samples/CorpAccomNet/channel-artifacts
+
+    depends_on:
+      - orderer.corp-accom-net.com
+      - peer0.esamerica.corp-accom-net.com
+      - peer0.abbott.corp-accom-net.com
+    networks:
+      - byfn

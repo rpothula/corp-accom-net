@@ -1,0 +1,67 @@
+version: '2'
+
+services:
+
+  orderer.corp-accom-net.com:
+    container_name: orderer.corp-accom-net.com
+    image: hyperledger/fabric-orderer
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/opt/gopath/fabric-samples/CorpAccomNet/channel-artifacts/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - ../channel-artifacts/genesis.block:/opt/gopath/fabric-samples/CorpAccomNet/channel-artifacts/genesis.block
+      - ../crypto-config/ordererOrganizations/corp-accom-net.com/orderers/orderer.corp-accom-net.com/msp:/var/hyperledger/orderer/msp
+      - ../crypto-config/ordererOrganizations/corp-accom-net.com/orderers/orderer.corp-accom-net.com/tls/:/var/hyperledger/orderer/tls
+      - orderer.corp-accom-net.com:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+
+  peer0.esamerica.corp-accom-net.com:
+    container_name: peer0.esamerica.corp-accom-net.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.esamerica.corp-accom-net.com
+      - CORE_PEER_ADDRESS=peer0.esamerica.corp-accom-net.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.esamerica.corp-accom-net.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.esamerica.corp-accom-net.com:7051
+      - CORE_PEER_LOCALMSPID=EsamericaMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/esamerica.corp-accom-net.com/peers/peer0.esamerica.corp-accom-net.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/esamerica.corp-accom-net.com/peers/peer0.esamerica.corp-accom-net.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.esamerica.corp-accom-net.com:/var/hyperledger/production
+    ports:
+      - 7051:7051
+
+
+  peer0.abbott.corp-accom-net.com:
+    container_name: peer0.abbott.corp-accom-net.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.abbott.corp-accom-net.com
+      - CORE_PEER_ADDRESS=peer0.abbott.corp-accom-net.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.abbott.corp-accom-net.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.abbott.corp-accom-net.com:7051
+      - CORE_PEER_LOCALMSPID=AbbottMSP
+    volumes:
+      - /var/run/:/host/var/run/
+      - ../crypto-config/peerOrganizations/abbott.corp-accom-net.com/peers/peer0.abbott.corp-accom-net.com/msp:/etc/hyperledger/fabric/msp
+      - ../crypto-config/peerOrganizations/abbott.corp-accom-net.com/peers/peer0.abbott.corp-accom-net.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.abbott.corp-accom-net.com:/var/hyperledger/production
+    ports:
+      - 9051:7051

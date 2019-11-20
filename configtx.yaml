@@ -1,0 +1,160 @@
+# Organizations
+Organizations:
+  - &OrdererOrg
+    Name: OrderingService
+    ID: OrdererMSP
+    MSPDir: crypto-config/ordererOrganizations/corp-accom-net.com/msp
+
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+  - &Abbott
+    Name: AbbottMSP
+    ID: AbbottMSP
+    MSPDir: crypto-config/peerOrganizations/abbott.corp-accom-net.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('AbbottMSP.admin', 'AbbottMSP.peer', 'AbbottMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('AbbottMSP.admin', 'AbbottMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('AbbottMSP.admin')"
+
+    AnchorPeers:
+      - Host: peer0.abbott.corp-accom-net.com
+        Port: 7051
+
+  - &ESAmerica
+    Name: EsamericaMSP
+    ID: EsamericaMSP
+    MSPDir: crypto-config/peerOrganizations/esamerica.corp-accom-net.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('EsamericaMSP.admin', 'EsamericaMSP.peer', 'EsamericaMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('EsamericaMSP.admin', 'EsamericaMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('EsamericaMSP.admin')"
+    AnchorPeers:
+      - Host: peer0.esamerica.corp-accom-net.com
+        Port: 7051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V1_4_3: true
+    V1_3: false
+    V1_1: false
+
+  Orderer: &OrdererCapabilities
+    V1_4_2: true
+    V1_1: false
+
+  Application: &ApplicationCapabilities
+    V1_4_2: true
+    V1_3: false
+    V1_2: false
+    V1_1: false
+# Orderer
+
+Orderer: &OrdererDefaults
+  OrdererType: solo
+  Addresses:
+    - orderer.corp-accom-net.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Kafka:
+    Brokers:
+      - 127.0.0.1:9092
+
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+Channel: &ChannelDefaults
+
+  Policies:
+
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+
+  Capabilities:
+    <<: *ChannelCapabilities
+# Application
+
+Application: &ApplicationDefaults
+
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+
+
+Profiles:
+  OrdererGenesis:
+    Capabilities:
+      <<: *ChannelCapabilities
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      MyFirstConsortium:
+        Organizations:
+          - *ESAmerica
+          - *Abbott
+
+  ChannelDemo:
+    Consortium: MyFirstConsortium
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *ESAmerica
+        - *Abbott
+
+      Capabilities:
+        <<: *ApplicationCapabilities

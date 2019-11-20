@@ -1,0 +1,23 @@
+OrdererOrgs:
+  - Name: OrderingService
+    Domain: corp-accom-net.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+
+PeerOrgs:
+  - Name: esamerica
+    Domain: esamerica.corp-accom-net.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+    Users:
+      Count: 1
+
+  - Name: abbott
+    Domain: abbott.corp-accom-net.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
